@@ -328,7 +328,7 @@ def create_experiment_name(cfg_coarse, cfg_detail, version=2):
 
 
 def train_expdeca(cfg_coarse, cfg_detail, start_i=-1, resume_from_previous = True,
-               force_new_location=False):
+               force_new_location=False): #这里的force location什么意思
     configs = [cfg_coarse, cfg_coarse, cfg_detail, cfg_detail]
     stages = ["train", "test", "train", "test"]
     stages_prefixes = ["", "", "", ""]
@@ -514,17 +514,17 @@ def main():
             # 'model/settings=coarse_train_expdeca_emomlp',
             # 'model.expression_constrain_type=exchange',
             # 'model.expression_constrain_use_jaw_pose=True',
-            'model.expression_constrain_use_global_pose=False',
+            'model.expression_constrain_use_global_pose=False', #需要观察一下不同训练模式中对哪些模块是否需要的设置
             # 'model.use_geometric_losses_expression_exchange=True',
 
             'model.use_emonet_feat_1=False',
-            'model.use_emonet_feat_2=True',
+            'model.use_emonet_feat_2=True', #这里怎么有两个feature
             'model.use_emonet_valence=False',
             'model.use_emonet_arousal=False',
             'model.use_emonet_expression=False',
             'model.use_emonet_combined=False',
-            f'+model.photometric_normalization={photometric_normalization}',
-            f'+model.use_mouth_corner_distance={use_mouth_corner_distance}',
+            f'+model.photometric_normalization={photometric_normalization}', #这个是什么意思
+            f'+model.use_mouth_corner_distance={use_mouth_corner_distance}', #这些好像是关键点
             f'+model.use_eye_distance={use_eye_distance}',
             f'+model.use_lip_distance={use_lip_distance}',
             f'+model.emo_feat_loss={emo_feature_loss_type}',  # emonet feature loss
