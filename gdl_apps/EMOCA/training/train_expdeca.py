@@ -346,11 +346,11 @@ def train_expdeca(cfg_coarse, cfg_detail, start_i=-1, resume_from_previous = Tru
     else:
         checkpoint, checkpoint_kwargs = None, None
 
-    if cfg_coarse.inout.full_run_dir == 'todo' or force_new_location:
+    if cfg_coarse.inout.full_run_dir == 'todo' or force_new_location:  # 这里的full_run_dir是在emoca_conf/inout/desktop.full_run_dir
         if force_new_location:
             print("The run will be resumed in a new foler (forked)")
             cfg_coarse.inout.previous_run_dir = cfg_coarse.inout.full_run_dir
-        time = datetime.datetime.now().strftime("%Y_%m_%d_%H-%M-%S")
+        time = datetime.datetime.now().strftime("%Y_%m_%d_%H-%M-%S")  # 这些是配置时间和实验名字
         random_id = str(hash(time))
         experiment_name = create_experiment_name(cfg_coarse, cfg_detail)
         full_run_dir = Path(configs[0].inout.output_dir) / (time + "_" + random_id + "_" + experiment_name)
@@ -421,7 +421,7 @@ def train_expdeca(cfg_coarse, cfg_detail, start_i=-1, resume_from_previous = Tru
         cfg = configs[i]
         deca = single_stage_deca_pass(deca, cfg, stages[i], stages_prefixes[i], dm=None, logger=wandb_logger,
                                       data_preparation_function=prepare_data,
-                                      checkpoint=checkpoint, checkpoint_kwargs=checkpoint_kwargs)
+                                      checkpoint=checkpoint, checkpoint_kwargs=checkpoint_kwargs) #分成好几个训练阶段
         checkpoint = None
 
 
