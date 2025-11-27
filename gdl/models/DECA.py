@@ -83,7 +83,7 @@ class DecaModule(LightningModule):
         if 'detail_conditioning' not in model_params.keys():
             # jaw, expression and detail code by default
             self.detail_conditioning = ['jawpose', 'expression', 'detail'] 
-            OmegaConf.set_struct(model_params, True)
+            OmegaConf.set_struct(model_params, True)  #开启结构保护（struct mode）之后你 不能再动态添加新的字段
             with open_dict(model_params):
                 model_params.detail_conditioning = self.detail_conditioning
         else:
@@ -103,7 +103,7 @@ class DecaModule(LightningModule):
         for c in self.detail_conditioning:
             if c not in supported_conditioning_keys:
                 raise ValueError(f"Conditioning on '{c}' is not supported. Supported conditionings: {supported_conditioning_keys}")
-        for c in self.detailemo_conditioning:
+        for c in self.detailemo_conditioning: # 空列表不会执行
             if c not in supported_conditioning_keys:
                 raise ValueError(f"Conditioning on '{c}' is not supported. Supported conditionings: {supported_conditioning_keys}")
 
@@ -114,12 +114,12 @@ class DecaModule(LightningModule):
             deca_class = DECA
         else:
             # other type of DECA-inspired networks possible (such as ExpDECA, which is what EMOCA)
-            deca_class = class_from_str(model_params.deca_class, sys.modules[__name__])
-
+            deca_class = class_from_str(model_params.deca_class, sys.modules[__name__]) #class_from_str把字符串名字转换成类对象， sys.modules[__name__]当前模块名字
+            #这里有个问题是默认配置文件里面是deca_class: EMOCA，而EMOCA不在当前模块里面，可能要运行时再检查检查
         # instantiate the network
         self.deca = deca_class(config=model_params)
 
-        self.mode = DecaMode[str(model_params.mode).upper()]
+        self.mode = DecaMode[str(model_params.mode).upper()] #upper是字符串大写，DecaMode的写法是枚举函数，得到的是枚举对象，self.mode = DecaMode.COARSE，self.mode.value=1
         self.stage_name = stage_name
         if self.stage_name is None:
             self.stage_name = ""
