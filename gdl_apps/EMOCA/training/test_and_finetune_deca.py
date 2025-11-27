@@ -239,7 +239,7 @@ def single_stage_deca_pass(deca, cfg, stage, prefix, dm=None, logger=None,
                            data_preparation_function=None,
                            checkpoint=None, checkpoint_kwargs=None, project_name_=None,
                            instantiation_function=None):
-    instantiation_function = instantiation_function or instantiate_deca
+    instantiation_function = instantiation_function or instantiate_deca #如果外部调用时 传入了 instantiation_function，就用它。如果没传，就用默认的 instantiate_deca
     project_name_ = project_name_ or project_name
     if dm is None:
         dm, sequence_name = data_preparation_function(cfg)
