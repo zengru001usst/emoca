@@ -968,7 +968,7 @@ class DecaModule(LightningModule):
         effective_batch_size = images.shape[0]  # this is the current batch size after all training augmentations modifications
 
         # 1) Reconstruct the face mesh
-        # FLAME - world space
+        # FLAME - world space 世界坐标 -> 相机坐标 -> 图像空间
         if not isinstance(self.deca.flame, FLAME_mediapipe):
             verts, landmarks2d, landmarks3d = self.deca.flame(shape_params=shapecode, expression_params=expcode,
                                                           pose_params=posecode)
@@ -995,11 +995,11 @@ class DecaModule(LightningModule):
         # 2) Render the coarse image
         if render:
             ops = self.deca.render(verts, trans_verts, albedo, lightcode)
-            # mask
+            # mask F.grid_sample根据指定的采样网格（grid）从输入张量中采样，生成新的输出张量
             mask_face_eye = F.grid_sample(self.deca.uv_face_eye_mask.expand(effective_batch_size, -1, -1, -1),
                                         ops['grid'].detach(),
                                         align_corners=False)
-            # images
+            # images 遮掉背景或不相关区域，只保留脸和眼睛的渲染结果
             predicted_images = ops['images']
             # predicted_images = ops['images'] * mask_face_eye * ops['alpha_images']
             # predicted_images_no_mask = ops['images'] #* mask_face_eye * ops['alpha_images']
@@ -1055,6 +1055,7 @@ class DecaModule(LightningModule):
                     predicted_images = (1. - masks) * images_resized + masks * predicted_images
                 else:
                     predicted_images = (1. - masks) * images + masks * predicted_images
+                    #只关注mask的部分
             elif self.deca.config.background_from_input in [False, "black"]:
                 predicted_images = masks * predicted_images
             elif self.deca.config.background_from_input in ["none"]:
@@ -1067,13 +1068,13 @@ class DecaModule(LightningModule):
             detailcode = codedict['detailcode']
             detailemocode = codedict['detailemocode']
 
-            # a) Create the detail conditioning lists
+            # a) Create the detail conditioning lists 这里的条件是指什么
             detail_conditioning_list = self._create_conditioning_lists(codedict, self.detail_conditioning)
             detailemo_conditioning_list = self._create_conditioning_lists(codedict, self.detailemo_conditioning)
             final_detail_conditioning_list = detail_conditioning_list + detailemo_conditioning_list
 
 
-            # b) Pass the detail code and the conditions through the detail generator to get displacement UV map
+            # b) Pass the detail code and the conditions through the detail generator to get displacement UV map（告诉网格表面在该点应该向外/向内偏移多少）
             if isinstance(self.deca.D_detail, Generator):
                 uv_z = self.deca.D_detail(torch.cat(final_detail_conditioning_list, dim=1))
             elif isinstance(self.deca.D_detail, GeneratorAdaIn):
@@ -1121,7 +1122,7 @@ class DecaModule(LightningModule):
                     raise ValueError(f"Invalid type of background modification {self.deca.config.background_from_input}")
 
 
-                # --- extract texture
+                # --- extract texture  感觉这些是标准流程
                 uv_pverts = self.deca.render.world2uv(trans_verts).detach()
                 uv_gt = F.grid_sample(torch.cat([images_resized, masks], dim=1), uv_pverts.permute(0, 2, 3, 1)[:, :, :, :2],
                                     mode='bilinear')
