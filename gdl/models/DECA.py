@@ -474,6 +474,7 @@ class DecaModule(LightningModule):
         For a training forward pass, additional corresponding data are necessery such as 'landmarks' and 'masks'. 
         For a testing pass, the images suffice. 
         :param training: Whether the forward pass is for training or testing.
+        ring size 代表每个样本包含多少张图像（如多帧、多角度）
         """
         codedict = {}
         original_batch_size = batch['image'].shape[0]
@@ -536,6 +537,16 @@ class DecaModule(LightningModule):
         # 1) COARSE STAGE
         # forward pass of the coarse encoder
         # shapecode, texcode, expcode, posecode, cam, lightcode = self._encode_flame(images)
+        """
+        shapecode身份形状编码，控制个体面部形状（骨架、轮廓等）
+        texcode 纹理编码，控制肤色、皮肤纹理等
+        expcode 表情编码，控制面部表情变化
+        posecode 头部姿态编码（旋转等）
+        cam 相机参数，控制拍摄视角和缩放
+        lightcode 光照编码，控制渲染光照效果
+        original_code 应该是模型输出的对图片的表征
+        具体过程之后可以重点看一下
+        """
         code, original_code = self._encode_flame(images)
         shapecode, texcode, expcode, posecode, cam, lightcode = self._unwrap_list(code)
         if original_code is not None:
@@ -577,7 +588,7 @@ class DecaModule(LightningModule):
                     new_order = np.array([np.random.permutation(K) + i * K for i in range(original_batch_size)])
                     new_order = new_order.flatten()
                     shapecode_new = shapecode[new_order]
-                    ## append new shape code data
+                    ## append new shape code data exchange这里是直接做cat合并欸
                     shapecode = torch.cat([shapecode, shapecode_new], dim=0)
                     texcode = torch.cat([texcode, texcode], dim=0)
                     expcode = torch.cat([expcode, expcode], dim=0)
