@@ -168,6 +168,7 @@ class DecaModule(LightningModule):
     def _init_emotion_loss(self):
         """
         Initialize the emotion perceptual loss (used for EMOCA supervision)
+        这里的以及下面初始话的写法都是对根据参数配置决定如何初始化，是否override
         """
         if 'emonet_weight' in self.deca.config.keys() and bool(self.deca.config.emonet_model_path):
             if self.emonet_loss is not None:
