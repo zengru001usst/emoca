@@ -1218,7 +1218,7 @@ class DecaModule(LightningModule):
         return codedict
 
     def _compute_emotion_loss(self, images, predicted_images, loss_dict, metric_dict, prefix, va=None, expr7=None, with_grad=True,
-                              batch_size=None, ring_size=None):
+                              batch_size=None, ring_size=None): #训练/验证两种模式 + 多种 loss 开关 + 多版本 EmoNet 输出”，并且统一统计所有情绪相关指标
         def loss_or_metric(name, loss, is_loss):
             if not is_loss:
                 metric_dict[name] = loss
@@ -2976,7 +2976,7 @@ class DECA(torch.nn.Module):
         print("Add D_detail.parameters() to the optimizer")
         return trainable_params
 
-    def train(self, mode: bool = True):
+    def train(self, mode: bool = True): #这里的.train()是把模型切换成训练模式
         super().train(mode)
         if mode:
             if self.mode == DecaMode.COARSE:
